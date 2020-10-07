@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sointu</title>
+  </head>
+  <body>
+    <h1>Sointu</h1>
+    <p>
+      <button id="register_client">Register client</button>
+      <input type="hidden" name="uuid" id="user_uuid" value="" />
+    </p>
+    <p>UUID: <span id="user_uuid_value"></span></p>
+    <hr />
+    <p>Exercise ID: <input id="exercise_id" type="number" value="1"></input></p>
+    <p>Code: <textarea rows="10" cols="40" id="code" disabled="true">print("Hello World")</textarea></p>
+    <p>
+      <button id="submit_exercise" disabled="true">Submit exercise</button>
+    </p>
+    <script src="/static/js/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+      $(function () {
+        var socket = io();
+        $("#register_client").click(function (e) {
+          e.preventDefault();
+          socket.emit("init");
+          return false;
+        });
+        $("#submit_exercise").click(function (e) {
+          e.preventDefault();
+          $("#code").attr("disabled", "true");
+          $("#exercise_id").attr("disabled", "true");
+          $("#submit_exercise").attr("disabled", "true");
+          const body = {
+              userId: $("#user_uuid_value").text(),
+              exerciseId: parseInt($("#exercise_id").val(),10)
+          }
+          socket.emit('submit_exercise', JSON.stringify(body))
+          return false;
+        });
+        socket.on("init_send_uuid", function (data) {
+          $("#user_uuid").val(data.userId);
+          $("#user_uuid_value").text(data.userId);
+          $("#register_client").attr("disabled", "true");
+          $("#submit_exercise").removeAttr("disabled");
+          $("#code").removeAttr("disabled");
+        });
+      });
+    </script>
+  </body>
+</html>
